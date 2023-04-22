@@ -11,11 +11,11 @@
     <option value="environment">Rear Camera</option>
   </select>
   <input id="zoomInput" type="range" min="1" max="3" step="0.1" value="1">
-  <video id="video" width="640" height="480" autoplay style="transform-origin: top left;"></video>
+  <video id="video" width="640" height="480" autoplay></video>
   <canvas id="canvas" width="640" height="480"></canvas>
   <script>
     // Set the initial camera options
-    var constraints = { video: { facingMode: 'user' } };
+    var constraints = { video: { facingMode: 'user', zoom: 1 } };
     // Get access to the camera
     navigator.mediaDevices.getUserMedia(constraints)
       .then(function(stream) {
@@ -64,10 +64,29 @@
     // Listen for zoom input change
     var zoomInput = document.querySelector('#zoomInput');
     zoomInput.addEventListener('input', function(event) {
-      var zoomValue = event.target.value;
+      var zoomLevel = event.target.value;
+      constraints.video.zoom = zoomLevel;
       var video = document.querySelector('#video');
-      video.style.transform = `scale(${zoomValue})`;
+      var stream = video.srcObject;
+      var tracks = stream.getVideoTracks();
+      tracks.forEach(function(track) {
+        track.applyConstraints(constraints.video);
+      });
+      adjustVideoSize(zoomLevel);
     });
+  // Function to adjust the size of the video element based on the zoom level
+function adjustVideoSize(zoomLevel) {
+  var video = document.querySelector('#video');
+  var canvas = document.querySelector('#canvas');
+  var videoWidth = video.videoWidth * zoomLevel;
+  var videoHeight = video.videoHeight * zoomLevel;
+  video.style.width = videoWidth + 'px';
+  video.style.height = videoHeight + 'px';
+  canvas.width = videoWidth;
+  canvas.height = videoHeight;
+}
+
+// Initial adjustment of video size based on zoom level
+adjustVideoSize(1);
   </script>
-</body>
-</html>
+  </html>
