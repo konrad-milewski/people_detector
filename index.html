@@ -6,16 +6,18 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 </head>
 <body>
+  <select id="cameraSelect">
+    <option value="user">Front Camera</option>
+    <option value="environment">Rear Camera</option>
+  </select>
+  <input id="zoomInput" type="range" min="1" max="3" step="0.1" value="1">
   <video id="video" width="640" height="480" autoplay></video>
   <canvas id="canvas" width="640" height="480"></canvas>
-  <select id="camera-input">
-    <option value="front">Front Camera</option>
-    <option value="back">Back Camera</option>
-  </select>
-  <input type="range" id="zoom" min="1" max="10" value="1" onchange="zoomCamera()"></input>
   <script>
+    // Set the initial camera options
+    var constraints = { video: { facingMode: 'user', zoom: 1 } };
     // Get access to the camera
-    navigator.mediaDevices.getUserMedia({ video: true })
+    navigator.mediaDevices.getUserMedia(constraints)
       .then(function(stream) {
         var video = document.querySelector('#video');
         video.srcObject = stream;
@@ -48,13 +50,28 @@
         ctx.fillText(prediction.class + ' - ' + Math.round(prediction.score * 100) + '%', prediction.bbox[0], prediction.bbox[1] - 10);
       });
     }, 400);
-    // Zoom the camera
-    function zoomCamera() {
-      var zoom = document.getElementById('zoom').value;
+    // Listen for camera input change
+    var cameraSelect = document.querySelector('#cameraSelect');
+    cameraSelect.addEventListener('change', function(event) {
+      constraints.video.facingMode = event.target.value;
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(function(stream) {
+          var video = document.querySelector('#video');
+          video.srcObject = stream;
+          video.play();
+        });
+    });
+    // Listen for zoom input change
+    var zoomInput = document.querySelector('#zoomInput');
+    zoomInput.addEventListener('input', function(event) {
+      constraints.video.zoom = event.target.value;
       var video = document.querySelector('#video');
-      video.zoom = zoom;
-    }
+      var stream = video.srcObject;
+      var tracks = stream.getVideoTracks();
+      tracks.forEach(function(track) {
+        track.applyConstraints(constraints.video);
+      });
+    });
   </script>
-  
 </body>
 </html>
