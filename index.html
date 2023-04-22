@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>People and Black Car Detector</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+</head>
+<body>
+  <video id="video" width="640" height="480" autoplay></video>
+  <canvas id="canvas" width="640" height="480"></canvas>
+  <script>
+    // Get access to the camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function(stream) {
+        var video = document.querySelector('#video');
+        video.srcObject = stream;
+        video.play();
+      });
+    // Load the sound
+    var audio = new Audio('beep.mp3');
+    // Load the CocoSSD model
+    var modelPromise = cocoSsd.load();
+    // Detect people and black cars in the video
+    // Detect people and black cars in the video
+setInterval(async function() {
+    var model = await modelPromise;
+    var predictions = await model.detect(video);
+    if (predictions.some(p => p.class === 'person')) {
+        audio.play();
+    }
+    
+    
+    // Draw the detection square on the canvas
+    var canvas = document.querySelector('#canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    predictions.forEach(function(prediction) {
+        ctx.beginPath();
+        ctx.rect(...prediction.bbox);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'red';
+        ctx.stroke();
+        ctx.font = '20px Arial';
+        ctx.fillStyle = 'red';
+        ctx.fillText(prediction.class + ' - ' + Math.round(prediction.score * 100) + '%', prediction.bbox[0], prediction.bbox[1] - 10);
+    });
+}, 400);
+  </script>
+</body>
+</html>
