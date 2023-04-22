@@ -8,6 +8,11 @@
 <body>
   <video id="video" width="640" height="480" autoplay></video>
   <canvas id="canvas" width="640" height="480"></canvas>
+  <select id="camera-input">
+    <option value="front">Front Camera</option>
+    <option value="back">Back Camera</option>
+  </select>
+  <input type="range" id="zoom" min="1" max="10" value="1" onchange="zoomCamera()"></input>
   <script>
     // Get access to the camera
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -21,21 +26,18 @@
     // Load the CocoSSD model
     var modelPromise = cocoSsd.load();
     // Detect people and black cars in the video
-    // Detect people and black cars in the video
-setInterval(async function() {
-    var model = await modelPromise;
-    var predictions = await model.detect(video);
-    if (predictions.some(p => p.class === 'person')) {
+    setInterval(async function() {
+      var model = await modelPromise;
+      var predictions = await model.detect(video);
+      if (predictions.some(p => p.class === 'person')) {
         audio.play();
-    }
-    
-    
-    // Draw the detection square on the canvas
-    var canvas = document.querySelector('#canvas');
-    var ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    predictions.forEach(function(prediction) {
+      }
+      // Draw the detection square on the canvas
+      var canvas = document.querySelector('#canvas');
+      var ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      predictions.forEach(function(prediction) {
         ctx.beginPath();
         ctx.rect(...prediction.bbox);
         ctx.lineWidth = 3;
@@ -44,8 +46,14 @@ setInterval(async function() {
         ctx.font = '20px Arial';
         ctx.fillStyle = 'red';
         ctx.fillText(prediction.class + ' - ' + Math.round(prediction.score * 100) + '%', prediction.bbox[0], prediction.bbox[1] - 10);
-    });
-}, 400);
+      });
+    }, 400);
+    // Zoom the camera
+    function zoomCamera() {
+      var zoom = document.getElementById('zoom').value;
+      var video = document.querySelector('#video');
+      video.zoom = zoom;
+    }
   </script>
 </body>
 </html>
