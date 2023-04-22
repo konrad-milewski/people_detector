@@ -64,29 +64,14 @@
     // Listen for zoom input change
     var zoomInput = document.querySelector('#zoomInput');
     zoomInput.addEventListener('input', function(event) {
-      var zoomLevel = event.target.value;
-      constraints.video.zoom = zoomLevel;
+      constraints.video.zoom = event.target.value;
       var video = document.querySelector('#video');
       var stream = video.srcObject;
       var tracks = stream.getVideoTracks();
       tracks.forEach(function(track) {
         track.applyConstraints(constraints.video);
       });
-      adjustVideoSize(zoomLevel);
     });
-  // Function to adjust the size of the video element based on the zoom level
-function adjustVideoSize(zoomLevel) {
-  var video = document.querySelector('#video');
-  var canvas = document.querySelector('#canvas');
-  var videoWidth = video.videoWidth * zoomLevel;
-  var videoHeight = video.videoHeight * zoomLevel;
-  video.style.width = videoWidth + 'px';
-  video.style.height = videoHeight + 'px';
-  canvas.width = videoWidth;
-  canvas.height = videoHeight;
-}
-
-// Initial adjustment of video size based on zoom level
-adjustVideoSize(1);
   </script>
-  </html>
+</body>
+</html>
